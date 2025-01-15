@@ -1,7 +1,4 @@
-'use server'
-
-export async function searchWikipedia(prevState: any, formData: FormData) {
-    const query = formData.get('query') as string
+export async function fetchWikipediaContent(query: string) {
     if (!query?.trim()) return null
 
     const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&redirects=1&titles=${encodeURIComponent(query)}`
@@ -12,8 +9,6 @@ export async function searchWikipedia(prevState: any, formData: FormData) {
         const pages = data.query.pages
         const pageId = Object.keys(pages)[0]
         const content = pages[pageId].extract
-
-        console.log('what the heck?', query, pages, content)
 
         return { query, content, error: '' }
     } catch (error) {
