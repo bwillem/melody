@@ -13,6 +13,7 @@ import { Check } from "lucide-react"
 import { cn } from "../lib/utils"
 import { useDebouncedCallback } from "use-debounce"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import LoadingSpinner from "./ui/spinner"
 
 export type Option = Record<"value" | "label", string> & Record<string, string>
 
@@ -48,8 +49,6 @@ export const AutoComplete = ({
     const params = new URLSearchParams(searchParams)
     const query = params.get('query')
 
-    // const [options, setOptions] = useState<Option[]>()
-
     const debouncedHandleSearch = useDebouncedCallback((term: string) => {
         if (term) {
             params.set('query', term)
@@ -61,15 +60,15 @@ export const AutoComplete = ({
 
     useEffect(() => {
         if (inputValue) {
+            setLoading(true)
             debouncedHandleSearch(inputValue)
+        } else {
+            setOptions([])
         }
     }, [inputValue])
 
     useEffect(() => {
-        console.log('QUERY', query)
-
         const automcompleteResults = async () => {
-            setLoading(true)
 
             try {
                 const response = await fetch(
@@ -132,9 +131,9 @@ export const AutoComplete = ({
 
             // This is a hack to prevent the input from being focused after the user selects an option
             // We can call this hack: "The next tick"
-            // setTimeout(() => {
-            //     inputRef?.current?.blur()
-            // }, 0)
+            setTimeout(() => {
+                inputRef?.current?.blur()
+            }, 0)
         },
         [onValueChange],
     )
@@ -151,55 +150,55 @@ export const AutoComplete = ({
                     placeholder={placeholder}
                     disabled={disabled}
                     className="text-base"
+                    isOpen={isOpen}
                 />
             </div>
-            <div className="relative mt-1">
-                <div
+            <div className="relative mt-[-1px]">
+                <CommandList
                     className={cn(
-                        "animate-in fade-in-0 zoom-in-95 absolute top-0 z-10 w-full rounded-xl bg-white outline-none",
-                        isOpen ? "block" : "hidden",
+                        "border animate-in fade-in-0 zoom-in-95 absolute top-0 z-10 w-full rounded-md bg-white outline-none",
+                        isOpen ? "block rounded-t-none" : "hidden",
                     )}
                 >
-                    <CommandList className="rounded-lg ring-1 ring-slate-200">
-                        {isLoading ? (
-                            <CommandPrimitive.Loading>
-                                <div className="p-1">
-                                    <Skeleton className="h-8 w-full" />
-                                </div>
-                            </CommandPrimitive.Loading>
-                        ) : null}
-                        {options.length > 0 && !isLoading ? (
-                            <CommandGroup>
-                                {options.map((option) => {
-                                    const isSelected = selected?.value === option.value
-                                    return (
-                                        <CommandItem
-                                            key={option.value}
-                                            value={option.label}
-                                            onMouseDown={(event) => {
-                                                event.preventDefault()
-                                                event.stopPropagation()
-                                            }}
-                                            onSelect={() => handleSelectOption(option)}
-                                            className={cn(
-                                                "flex w-full items-center gap-2",
-                                                !isSelected ? "pl-8" : null,
-                                            )}
-                                        >
-                                            {isSelected ? <Check className="w-4" /> : null}
-                                            {option.label}
-                                        </CommandItem>
-                                    )
-                                })}
-                            </CommandGroup>
-                        ) : null}
-                        {!isLoading ? (
-                            <CommandPrimitive.Empty className="select-none rounded-sm px-2 py-3 text-center text-sm">
-                                {emptyMessage}
-                            </CommandPrimitive.Empty>
-                        ) : null}
-                    </CommandList>
-                </div>
+                    {/* className="rounded-md ring-1 ring-slate-200"> */}
+                    {isLoading ? (
+                        <CommandPrimitive.Loading>
+                            <div className="p-1">
+                                <Skeleton className="h-8 w-full" />
+                            </div>
+                        </CommandPrimitive.Loading>
+                    ) : null}
+                    {options.length > 0 && !isLoading ? (
+                        <CommandGroup>
+                            {options.map((option) => {
+                                const isSelected = selected?.value === option.value
+                                return (
+                                    <CommandItem
+                                        key={option.value}
+                                        value={option.label}
+                                        onMouseDown={(event) => {
+                                            event.preventDefault()
+                                            event.stopPropagation()
+                                        }}
+                                        onSelect={() => handleSelectOption(option)}
+                                        className={cn(
+                                            "flex w-full items-center gap-2",
+                                            // !isSelected ? "pl-8" : null,
+                                        )}
+                                    >
+                                        {/* {isSelected ? <Check className="w-4" /> : null} */}
+                                        {option.label}
+                                    </CommandItem>
+                                )
+                            })}
+                        </CommandGroup>
+                    ) : null}
+                    {!isLoading ? (
+                        <CommandPrimitive.Empty className="select-none rounded-sm px-2 py-3 text-center text-sm text-muted-foreground">
+                            {emptyMessage}
+                        </CommandPrimitive.Empty>
+                    ) : <LoadingSpinner />}
+                </CommandList>
             </div>
         </CommandPrimitive>
     )
