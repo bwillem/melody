@@ -1,4 +1,8 @@
-import { Geist, Geist_Mono, Henny_Penny } from "next/font/google"
+import { Geist, Geist_Mono, Henny_Penny, Tiny5 } from "next/font/google"
+
+export const tiny = Tiny5({
+    weight: "400",
+})
 
 export const geistSans = Geist({
     variable: "--font-geist-sans",
